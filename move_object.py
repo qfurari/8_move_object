@@ -96,7 +96,7 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
          - Name:  speed
          - DefaultValue: 0.01
         """
-        self._speed = [0.01]
+        self._speed = [10]
         """
         
          - Name:  scope
@@ -210,47 +210,66 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
     #
     def onExecute(self, ec_id):
         # inPositionポートからデータを読み込む
-        if self._inCoordinateIn.isNew():
-            #追加座標の読み込み
-            print("座標読み込み開始")
-            coordinateIn_data_list = []
-            while self._inCoordinateIn.isNew():
-                coordinateIn_data = self._inCoordinateIn.read().data
-                coordinateIn_data_list.append(coordinateIn_data)
-            print("現在の座標配列の長さ："+ str(len(coordinateIn_data_list)))
-        if self._inPositionIn.isNew():
-            #追加座標の読み込み
-            print("座標読み込み開始")
-            positionIn_data_list = []
-            while self._inCoordinateIn.isNew():
-                positionIn_data = self._inCoordinateIn.read().data
-                positionIn_data_list.append(positionIn_data)
-            print("現在の座標配列の長さ："+ str(len(coordinateIn_data_list)))
-        
-            #処理
-            scope = self._scope[0]#修正いるかも リストで帰ってくるなら
-            speed = self._speed[0]
+       
             
-            num_circles =len(coordinateIn_data_list)
-            num_people = len(positionIn_data_list)
-        
-            for j in range(num_people):
-                for i in range(num_circles):
-            # 目標位置と円の距離を計算
-                    target_x, target_y = positionIn_data_list[j]
-                    circle_x, circle_y = coordinateIn_data_list[i]
-                    distance = math.sqrt((target_x - circle_x) ** 2 + (target_y - circle_y) ** 2)
+        if self._inPositionIn.isNew()  :# and self._inCoordinateIn.isNew()
+            if self._inCoordinateIn.isNew():
+                #追加座標の読み込み
+                print("座標読み込み開始")
+                coordinateIn_data_list = []
+                while self._inCoordinateIn.isNew():
+                    coordinateIn_data = self._inCoordinateIn.read().data
+                    coordinateIn_data_list.append(coordinateIn_data)
+                print("現在の座標配列の長さ："+ str(len(coordinateIn_data_list)))
 
-            # 目標位置に向かって移動
-                    if distance < scope:  # あまりに小さい距離のときは動かさない
-                        direction_x = (target_x - circle_x) / distance
-                        direction_y = (target_y - circle_y) / distance
-                        coordinateIn_data_list[i] = (circle_x + direction_x * speed, circle_y + direction_y * speed)
+                #追加座標の読み込み
+                print("人の座標読み込み開始")
+                positionIn_data_list = []
+                while self._inPositionIn.isNew():
+                    positionIn_data = self._inPositionIn.read().data
+                    positionIn_data_list.append(positionIn_data)
+                print("現在人の座標配列の長さ："+ str(len(positionIn_data_list)))
 
-            #dataの挿入
-            for data in coordinateIn_data_list:
+            
+                #処理
+                scope = self._scope[0]#修正いるかも リストで帰ってくるなら
+                speed = self._speed[0]
+                num_circles =len(coordinateIn_data_list)
+                num_people = len(positionIn_data_list)
+                print("オブジェクトの数",num_circles)
+                print("人の数",num_people) 
+                
+                for j in range(num_people):
+                    print("####TEST1####")
+                    for i in range(num_circles):
+                        print("####TEST2####")
+                # 目標位置と円の距離を計算
+                        target_x, target_y = positionIn_data_list[j]
+                        circle_x, circle_y = coordinateIn_data_list[i]
+                        distance = int(math.sqrt((target_x - circle_x) ** 2 + (target_y - circle_y) ** 2))
+                        print("####TEST3####")
+
+                # 目標位置に向かって移動
+                        if distance < scope: 
+                            print("check") # あまりに小さい距離のときは動かさない
+                            direction_x = int((target_x - circle_x) / distance)
+                            direction_y = int((target_y - circle_y) / distance)
+                            coordinateIn_data_list[i] = [int(circle_x + direction_x * speed), int(circle_y + direction_y * speed)]
+
+                #dataの挿入
+                print("####TEST4####")
+                print("移動済みの座標",coordinateIn_data_list)
+                print("人の座標",positionIn_data_list)
+                for data in coordinateIn_data_list:
                     OutCoordinate = RTC.TimedShortSeq(RTC.Time(0,0),data)
                     self._outCoordinateOut.write(OutCoordinate)
+
+                del coordinateIn_data_list
+                del positionIn_data_list
+                del OutCoordinate
+                del scope
+                del speed
+        
                 
         return RTC.RTC_OK
 	
