@@ -215,49 +215,67 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
         if self._inPositionIn.isNew()  :# and self._inCoordinateIn.isNew()
             if self._inCoordinateIn.isNew():
                 #追加座標の読み込み
-                print("座標読み込み開始")
+                #print("座標読み込み開始")
                 coordinateIn_data_list = []
                 while self._inCoordinateIn.isNew():
                     coordinateIn_data = self._inCoordinateIn.read().data
                     coordinateIn_data_list.append(coordinateIn_data)
-                print("現在の座標配列の長さ："+ str(len(coordinateIn_data_list)))
+                #print("現在の座標配列の長さ："+ str(len(coordinateIn_data_list)))
 
                 #追加座標の読み込み
-                print("人の座標読み込み開始")
+                #print("人の座標読み込み開始")
                 positionIn_data_list = []
                 while self._inPositionIn.isNew():
                     positionIn_data = self._inPositionIn.read().data
                     positionIn_data_list.append(positionIn_data)
-                print("現在人の座標配列の長さ："+ str(len(positionIn_data_list)))
+                #print("現在人の座標配列の長さ："+ str(len(positionIn_data_list)))
 
             
                 #処理
-                scope = self._scope[0]#修正いるかも リストで帰ってくるなら
-                speed = self._speed[0]
+                scope = 50#修正いるかも リストで帰ってくるなら
+                speed = 10
                 num_circles =len(coordinateIn_data_list)
                 num_people = len(positionIn_data_list)
                 print("オブジェクトの数",num_circles)
                 print("人の数",num_people) 
                 
                 for j in range(num_people):
-                    print("####TEST1####")
+                    #print("####TEST1####")
                     for i in range(num_circles):
-                        print("####TEST2####")
+                       # print("####TEST2####")
                 # 目標位置と円の距離を計算
-                        target_x, target_y = positionIn_data_list[j]
-                        circle_x, circle_y = coordinateIn_data_list[i]
+                        target_x = positionIn_data_list[j][0]
+                        target_y = positionIn_data_list[j][1]
+                        circle_x = coordinateIn_data_list[i][0]
+                        circle_y = coordinateIn_data_list[i][1]
                         distance = int(math.sqrt((target_x - circle_x) ** 2 + (target_y - circle_y) ** 2))
-                        print("####TEST3####")
+                       # print("####TEST3####")
 
                 # 目標位置に向かって移動
-                        if distance < scope: 
-                            print("check") # あまりに小さい距離のときは動かさない
-                            direction_x = int((target_x - circle_x) / distance)
-                            direction_y = int((target_y - circle_y) / distance)
+                        if distance == 0:
+                            coordinateIn_data_list[i] = [int(circle_x + 1), int(circle_y + 1)]
+
+                        elif distance < scope : 
+                           # print("check") # あまりに小さい距離のときは動かさない
+                            direction_x = (circle_x - target_x) / distance
+                           # print("check")
+                            direction_y = (circle_y - target_y) / distance
+                           # print("check")
+                            coordinateIn_data_list[i] = [int(circle_x + direction_x * speed), int(circle_y + direction_y * speed)]
+                           # print("check")
+                        else:
+                            direction_x = (target_x - circle_x) / distance
+                           # print("check")
+                            direction_y = (target_y - circle_y) / distance
+                           # print("check")
                             coordinateIn_data_list[i] = [int(circle_x + direction_x * speed), int(circle_y + direction_y * speed)]
 
+
+
+
+
                 #dataの挿入
-                print("####TEST4####")
+                #print("####TEST4####")
                 print("移動済みの座標",coordinateIn_data_list)
                 print("人の座標",positionIn_data_list)
                 for data in coordinateIn_data_list:
@@ -267,6 +285,14 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
                 del coordinateIn_data_list
                 del positionIn_data_list
                 del OutCoordinate
+                del direction_x
+                del direction_y
+                del circle_x
+                del circle_y
+                del distance
+                del coordinateIn_data
+                del target_x
+                del target_y
                 del scope
                 del speed
         
