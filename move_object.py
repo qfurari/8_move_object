@@ -44,8 +44,8 @@ move_object_spec = ["implementation_id", "move_object",
          "max_instance",      "1", 
          "language",          "Python", 
          "lang_type",         "SCRIPT",
-         "conf.default.speed", "0.01",
-         "conf.default.scope", "100",
+         "conf.default.speed", "10",
+         "conf.default.scope", "50",
 
          "conf.__widget__.speed", "text",
          "conf.__widget__.scope", "slider",
@@ -94,15 +94,15 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
         """
         
          - Name:  speed
-         - DefaultValue: 0.01
+         - DefaultValue: 10
         """
         self._speed = [10]
         """
         
          - Name:  scope
-         - DefaultValue: 100
+         - DefaultValue: 50
         """
-        self._scope = [100]
+        self._scope = [50]
 		
         # </rtc-template>
 
@@ -117,8 +117,8 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
     #
     def onInitialize(self):
         # Bind variables and configuration variable
-        self.bindParameter("speed", self._speed, "0.01")
-        self.bindParameter("scope", self._scope, "100")
+        self.bindParameter("speed", self._speed, "10")
+        self.bindParameter("scope", self._scope, "50")
 		
         # Set InPort buffers
         self.addInPort("inCoordinate",self._inCoordinateIn)
@@ -234,8 +234,8 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
 
             
                 #処理
-                scope = 50#修正いるかも リストで帰ってくるなら
-                speed = 10
+                scope = self._scope[0]#修正いるかも リストで帰ってくるなら
+                speed = self._speed[0]
                 num_circles =len(coordinateIn_data_list)
                 num_people = len(positionIn_data_list)
                 print("オブジェクトの数",num_circles)
@@ -263,19 +263,36 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
                            # print("check")
                             direction_y = (circle_y - target_y) / distance
                            # print("check")
-                            coordinateIn_data_list[i] = [int(circle_x + direction_x * speed), int(circle_y + direction_y * speed)]
+                            x = int(circle_x + direction_x * speed)
+                            y = int(circle_y + direction_y * speed)
+                            #範囲指定
+                            if x < 0:
+                                x=0
+                            if x >100:
+                                x = 100
+                            if y < 0:
+                                y= 0
+                            if y > 100:
+                                y =100
+                            coordinateIn_data_list[i] = [x, y]
                            # print("check")
                         else:
                             direction_x = (target_x - circle_x) / distance
                            # print("check")
                             direction_y = (target_y - circle_y) / distance
                            # print("check")
-                            coordinateIn_data_list[i] = [int(circle_x + direction_x * speed), int(circle_y + direction_y * speed)]
-
-
-
-
-
+                            x = int(circle_x + direction_x * speed)
+                            y = int(circle_y + direction_y * speed)
+                            #範囲指定
+                            if x < 0:
+                                x=0
+                            if x >100:
+                                x = 100
+                            if y < 0:
+                                y= 0
+                            if y > 100:
+                                y =100
+                            coordinateIn_data_list[i] = [x, y]
                 #dataの挿入
                 #print("####TEST4####")
                 print("移動済みの座標",coordinateIn_data_list)
@@ -284,19 +301,7 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
                     OutCoordinate = RTC.TimedShortSeq(RTC.Time(0,0),data)
                     self._outCoordinateOut.write(OutCoordinate)
 
-                del coordinateIn_data_list
-                del positionIn_data_list
-                del OutCoordinate
-                del direction_x
-                del direction_y
-                del circle_x
-                del circle_y
-                del distance
-                del coordinateIn_data
-                del target_x
-                del target_y
-                del scope
-                del speed
+                
         
                 
         return RTC.RTC_OK
