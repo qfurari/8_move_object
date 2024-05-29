@@ -218,6 +218,7 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
                 #print("座標読み込み開始")
                 coordinateIn_data_list = []
                 while self._inCoordinateIn.isNew():
+                    time.sleep(0.005)
                     coordinateIn_data = self._inCoordinateIn.read().data
                     coordinateIn_data_list.append(coordinateIn_data)
                 #print("現在の座標配列の長さ："+ str(len(coordinateIn_data_list)))
@@ -226,6 +227,7 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
                 #print("人の座標読み込み開始")
                 positionIn_data_list = []
                 while self._inPositionIn.isNew():
+                    time.sleep(0.005)
                     positionIn_data = self._inPositionIn.read().data
                     positionIn_data_list.append(positionIn_data)
                 #print("現在人の座標配列の長さ："+ str(len(positionIn_data_list)))
@@ -253,7 +255,7 @@ class move_object(OpenRTM_aist.DataFlowComponentBase):
 
                 # 目標位置に向かって移動
                         if distance == 0:
-                            coordinateIn_data_list[i] = [int(circle_x + 1), int(circle_y + 1)]
+                            pass
 
                         elif distance < scope : 
                            # print("check") # あまりに小さい距離のときは動かさない
